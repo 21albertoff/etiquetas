@@ -1,0 +1,9 @@
+# Entorno local
+.env
+
+# Archivos temporales de PHP
+*.log
+*.tmp
+
+# Otros
+.DS_Store
