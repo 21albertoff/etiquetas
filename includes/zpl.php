@@ -74,7 +74,7 @@ function escribirTexto(&$zpl, $x, $y, $alto, $ancho, $texto)
 |--------------------------------------------------------------------------
 */
 
-function generarZPL($codigo, $cliente, $lote, $fecha)
+function generarZPL($codigo, $cliente, $producto, $lote, $fecha)
 {
 
     /*
@@ -152,8 +152,7 @@ function generarZPL($codigo, $cliente, $lote, $fecha)
     CLIENTE
     =====================================================
     */
-
-    $lineas = dividirTexto($cliente, 32);
+    $lineas = dividirTexto($producto, 32);
 
     escribirTexto(
         $zpl,

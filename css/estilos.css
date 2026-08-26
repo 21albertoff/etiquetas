@@ -285,3 +285,52 @@ main{
     font-size:18px;
 
 }
+
+.historial-click {
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.historial-click:hover {
+    transform: scale(1.02);
+    opacity: 0.8;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.historial-info {
+    flex: 1;
+}
+
+.btn-reimprimir {
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #eee;
+    cursor: pointer;
+
+    font-size: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: transform 0.15s, background 0.15s;
+}
+
+.btn-reimprimir:hover {
+    background: #ddd;
+    transform: scale(1.08);
+}
+
+.btn-reimprimir:active {
+    transform: scale(0.95);
+}

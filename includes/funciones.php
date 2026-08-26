@@ -32,6 +32,7 @@ function convertirFechaSubasta(string $valor): string
 function obtenerDatosEtiqueta(PDO $conn, string $codigo)
 {
     $partes = validarCodigoTrazabilidad($codigo);
+
     if ($partes === false) {
         return false;
     }
@@ -42,16 +43,24 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
             v.sVTA_IdCliente,
             v.sVTA_NVenta,
             v.sVTA_Idenvase,
-            v.sVTA_BultosVta,
+            SUM(v.sVTA_BultosVta) AS TotalBultosVta,
             g.GEN_NombreGenero
         FROM sb_ventas v
         INNER JOIN generos g
-            ON g.GEN_IdGenero=v.sVTA_IdGenero
+            ON g.GEN_IdGenero = v.sVTA_IdGenero
         WHERE
-            v.sVTA_IdSubasta=?
-            AND v.sVTA_IdCliente=?
-            AND v.sVTA_NVenta=?
-        LIMIT 1"
+            v.sVTA_IdSubasta = ?
+            AND v.sVTA_IdCliente = ?
+            AND v.sVTA_NVenta = ?
+        GROUP BY
+            v.sVTA_IdSubasta,
+            v.sVTA_IdCliente,
+            v.sVTA_NVenta,
+            v.sVTA_Idenvase,
+            g.GEN_NombreGenero
+        ORDER BY
+            v.sVTA_Idenvase,
+            g.GEN_NombreGenero"
     );
 
     $stmt->execute([
@@ -60,28 +69,53 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
         $partes[3]
     ]);
 
-    $fila = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$fila) {
+    $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!$filas) {
         return false;
     }
 
-    return [
-        'codigo' => $fila['sVTA_IdCliente'],
-        'cliente' => $fila['GEN_NombreGenero'],
-        'producto' => $fila['GEN_NombreGenero'],
-        'lote' => sprintf(
-            'L.%s.%s.%s',
-            $fila['sVTA_IdSubasta'],
-            $fila['sVTA_IdCliente'],
-            $fila['sVTA_NVenta']
-        ),
-        'fecha' => convertirFechaSubasta($fila['sVTA_IdSubasta']),
-        'copias' => calcularCopias(
-            $fila['sVTA_Idenvase'], 
-            $fila['sVTA_BultosVta'], 
-            $fila['sVTA_IdCliente']
-        ),
-    ];
+    $resultado = [];
+
+    foreach ($filas as $fila) {
+
+        $bultos = (int) $fila['TotalBultosVta'];
+        $envase = (int) $fila['sVTA_Idenvase'];
+        $cliente = (int) $fila['sVTA_IdCliente'];
+
+        $resultado[] = [
+            'codigo' => $cliente,
+
+            'cliente' => $cliente,
+
+            'producto' => $fila['GEN_NombreGenero'],
+
+            'genero' => $fila['GEN_NombreGenero'],
+
+            'envase' => $envase,
+
+            'bultos' => $bultos,
+
+            'lote' => sprintf(
+                'L.%s.%s.%s',
+                $fila['sVTA_IdSubasta'],
+                $fila['sVTA_IdCliente'],
+                $fila['sVTA_NVenta']
+            ),
+
+            'fecha' => convertirFechaSubasta(
+                $fila['sVTA_IdSubasta']
+            ),
+
+            'copias' => calcularCopias(
+                $envase,
+                $bultos,
+                $cliente
+            ),
+        ];
+    }
+
+    return $resultado;
 }
 
 function calcularCopias(int $envase, int $bultos, int $cliente): int

@@ -2,7 +2,7 @@
 // VARIABLES
 //============================================
 
-let historial = [];
+let historial = JSON.parse(localStorage.getItem("historialEtiquetas")) || [];
 let imprimiendo = false;
 
 //============================================
@@ -14,6 +14,8 @@ window.onload = () => {
     iniciarReloj();
 
     cambiarEstado("🟢 Esperando lectura...", "ok");
+
+    mostrarHistorial();
 
     document.getElementById("codigo").focus();
 
@@ -97,11 +99,13 @@ async function buscarCodigo(){
 
         }
 
-        document.getElementById("cliente").innerHTML = datos.cliente;
-        document.getElementById("producto").innerHTML = datos.producto;
-        document.getElementById("lote").innerHTML = datos.lote;
-        document.getElementById("fecha").innerHTML = datos.fecha;
-        document.getElementById("copias").innerHTML = datos.copias;
+        const fila = datos.datos[0];
+
+        document.getElementById("cliente").textContent = fila.cliente ?? "";
+        document.getElementById("producto").textContent = fila.producto ?? "";
+        document.getElementById("lote").textContent = fila.lote ?? "";
+        document.getElementById("fecha").textContent = fila.fecha ?? "";
+        document.getElementById("copias").textContent = fila.copias ?? "";
 
         cambiarEstado("🟢 Datos encontrados","ok");
 
@@ -168,7 +172,7 @@ async function imprimirEtiqueta(){
 
         cambiarEstado("🟢 Etiqueta impresa correctamente","ok");
 
-        setTimeout(limpiar,1000);
+        setTimeout(limpiar,3000);
 
     }
 
@@ -210,36 +214,56 @@ function limpiar(){
 // HISTORIAL
 //============================================
 
-function agregarHistorial(codigo,copias){
+function agregarHistorial(codigo, copias){
 
     historial.unshift({
 
-        hora:new Date().toLocaleTimeString(),
+        hora: new Date().toLocaleTimeString('es-ES'),
 
-        codigo:codigo,
+        codigo: codigo,
 
-        copias:copias
+        copias: copias
 
     });
 
-    if(historial.length>10){
+    // Mantener únicamente las últimas 10
+    if(historial.length > 10){
 
-        historial.pop();
+        historial = historial.slice(0, 10);
 
     }
 
-    let html="";
+    // Guardar en el navegador
+    localStorage.setItem(
+        "historialEtiquetas",
+        JSON.stringify(historial)
+    );
 
-    historial.forEach(item=>{
+    mostrarHistorial();
+
+}
+
+function mostrarHistorial(){
+
+    let html = "";
+
+    historial.forEach((item, index) => {
 
         html += `
         <div class="item">
 
-            <strong>${item.hora}</strong><br>
+            <div class="historial-info">
+                <strong>${item.hora}</strong><br>
+                Código: ${item.codigo}<br>
+                Copias: ${item.copias}
+            </div>
 
-            Código: ${item.codigo}<br>
-
-            Copias: ${item.copias}
+            <button 
+                class="btn-reimprimir"
+                onclick="reimprimirHistorial(${index})"
+                title="Reimprimir etiqueta">
+                🖨️
+            </button>
 
         </div>
         `;
@@ -247,6 +271,83 @@ function agregarHistorial(codigo,copias){
     });
 
     document.getElementById("historial").innerHTML = html;
+
+}
+
+async function reimprimirHistorial(index){
+
+    if(imprimiendo) return;
+
+    const item = historial[index];
+
+    if(!item) return;
+
+    const codigo = item.codigo;
+
+    imprimiendo = true;
+
+    document.getElementById("codigo").disabled = true;
+
+    cambiarEstado("🟡 Reimprimiendo...", "info");
+
+    try{
+
+        const respuesta = await fetch("api/imprimir.php", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+
+            body: "codigo=" + encodeURIComponent(codigo)
+
+        });
+
+        const texto = await respuesta.text();
+        const datos = JSON.parse(texto);
+
+        if(!datos.ok){
+
+            cambiarEstado(
+                "🔴 " + datos.mensaje,
+                "error"
+            );
+
+            imprimiendo = false;
+            document.getElementById("codigo").disabled = false;
+
+            return;
+        }
+
+        cambiarEstado(
+            "🟢 Etiqueta reimpresa correctamente",
+            "ok"
+        );
+
+        setTimeout(() => {
+
+            limpiar();
+
+            imprimiendo = false;
+            document.getElementById("codigo").disabled = false;
+
+        }, 3000);
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        cambiarEstado(
+            "🔴 Error al reimprimir",
+            "error"
+        );
+
+        imprimiendo = false;
+        document.getElementById("codigo").disabled = false;
+
+    }
 
 }
 
