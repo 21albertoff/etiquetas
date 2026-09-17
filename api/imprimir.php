@@ -38,12 +38,17 @@ $totalCopias = 0;
 
 foreach ($datos as $fila) {
 
-    $zpl = generarZPL(
-        $fila["codigo"],
-        $fila["cliente"],
-        $fila["producto"],
-        $fila["lote"],
-        $fila["fecha"]
+    if ((int)$fila["cliente"] === 91300) {
+        $codigoAgricultor = $fila["codigoAgricultor"];
+    }
+    
+    $zpl = generarZPL( 
+        $fila["codigo"], 
+        $fila["cliente"], 
+        $fila["producto"], 
+        $fila["lote"], 
+        $fila["fecha"],
+        $codigoAgricultor
     );
 
     //------------------------------------------

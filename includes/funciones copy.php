@@ -39,44 +39,30 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
 
     $stmt = $conn->prepare(
         "SELECT
-    v.sVTA_IdSubasta,
-    v.sVTA_IdCliente,
-    v.sVTA_NVenta,
-    v.sVTA_Idenvase,
-    SUM(v.sVTA_BultosVta) AS TotalBultosVta,
-    g.GEN_NombreGenero,
-    ae.AEN_idAgriPrincipal AS codigoAgricultor
+            v.sVTA_IdSubasta,
+            v.sVTA_IdCliente,
+            v.sVTA_NVenta,
+            v.sVTA_Idenvase,
+            SUM(v.sVTA_BultosVta) AS TotalBultosVta,
+            g.GEN_NombreGenero
+        FROM sb_ventas v
+        INNER JOIN generos g
+            ON g.GEN_IdGenero = v.sVTA_IdGenero
+        WHERE
+            v.sVTA_IdSubasta = ?
+            AND v.sVTA_IdCliente = ?
+            AND v.sVTA_NVenta = ?
+        GROUP BY
+            v.sVTA_IdSubasta,
+            v.sVTA_IdCliente,
+            v.sVTA_NVenta,
+            v.sVTA_Idenvase,
+            g.GEN_NombreGenero
+        ORDER BY
+            v.sVTA_Idenvase,
+            g.GEN_NombreGenero"
+    );
 
-FROM sb_ventas v
-
-INNER JOIN generos g
-    ON g.GEN_IdGenero = v.sVTA_IdGenero
-
-INNER JOIN albentrada_lineas ael
-    ON ael.AEL_idlinea = v.sVTA_IdLineaEntrada
-
-INNER JOIN albentrada ae
-    ON ae.AEN_idalbaran = ael.AEL_idalbaran
-
-WHERE
-    v.sVTA_IdSubasta = ?
-    AND v.sVTA_IdCliente = ?
-    AND v.sVTA_NVenta = ?
-
-GROUP BY
-    v.sVTA_IdSubasta,
-    v.sVTA_IdCliente,
-    v.sVTA_NVenta,
-    v.sVTA_Idenvase,
-    g.GEN_NombreGenero,
-    ae.AEN_idAgriPrincipal
-
-ORDER BY
-    v.sVTA_Idenvase,
-    g.GEN_NombreGenero;
-    ");
-
-    
 
     $stmt->execute([
         $partes[1],
@@ -102,8 +88,6 @@ ORDER BY
             'codigo' => $cliente,
 
             'cliente' => $cliente,
-
-            'codigoAgricultor' => $fila['codigoAgricultor'],
 
             'producto' => $fila['GEN_NombreGenero'],
 

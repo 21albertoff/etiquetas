@@ -74,7 +74,7 @@ function escribirTexto(&$zpl, $x, $y, $alto, $ancho, $texto)
 |--------------------------------------------------------------------------
 */
 
-function generarZPL($codigo, $cliente, $producto, $lote, $fecha, $codigoAgricultor = null)
+function generarZPL($codigo, $cliente, $producto, $lote, $fecha)
 {
 
     /*
@@ -110,11 +110,6 @@ function generarZPL($codigo, $cliente, $producto, $lote, $fecha, $codigoAgricult
     $loteX = 4;
     $loteY = 6;
     $loteTam = 6;
-
-    // Código agricultor
-    $agricultorX = 10;
-    $agricultorY = 6;
-    $agricultorTam = 6;
 
     // Fecha
     $fechaX = 4;
@@ -195,25 +190,6 @@ function generarZPL($codigo, $cliente, $producto, $lote, $fecha, $codigoAgricult
         $loteTam,
         "LOTE: " . $lote
     );
-
-    /*
-    =====================================================
-    CÓDIGO AGRICULTOR
-    =====================================================
-    */
-
-    if ((int)$cliente === 91300 && $codigoAgricultor !== null) {
-
-        escribirTexto(
-            $zpl,
-            $agricultorX,
-            $agricultorY,
-            $agricultorTam,
-            $agricultorTam,
-            "C.A.: " . $codigoAgricultor
-        );
-
-    }
 
     /*
     =====================================================
