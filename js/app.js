@@ -154,6 +154,12 @@ async function imprimirEtiqueta(){
         });
 
         const texto = await respuesta.text();
+
+        console.log("=================================");
+        console.log("RESPUESTA DE imprimir.php:");
+        console.log(texto);
+        console.log("=================================");
+
         const datos = JSON.parse(texto);
 
         if(!datos.ok){
@@ -178,9 +184,11 @@ async function imprimirEtiqueta(){
 
     catch(error){
 
-        console.error(error);
+        console.error("Error al imprimir:", error);
 
         cambiarEstado("🔴 Error al imprimir","error");
+
+        setTimeout(limpiar,3000);
 
     }
 
@@ -305,6 +313,8 @@ async function reimprimirHistorial(index){
         });
 
         const texto = await respuesta.text();
+        console.log("Respuesta de imprimir.php:", texto);
+
         const datos = JSON.parse(texto);
 
         if(!datos.ok){
@@ -337,7 +347,7 @@ async function reimprimirHistorial(index){
     }
     catch(error){
 
-        console.error(error);
+        console.error("Error al imprimir:", error);
 
         cambiarEstado(
             "🔴 Error al reimprimir",

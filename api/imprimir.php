@@ -35,6 +35,7 @@ if (!$datos) {
 
 $zplTotal = "";
 $totalCopias = 0;
+$codigoAgricultor = "";
 
 foreach ($datos as $fila) {
 
