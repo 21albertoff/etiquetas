@@ -87,7 +87,13 @@ async function buscarCodigo(){
         });
 
         const texto = await respuesta.text();
-        const datos = JSON.parse(texto);
+
+console.log("=================================");
+console.log("RESPUESTA DE buscar.php:");
+console.log(texto);
+console.log("=================================");
+
+const datos = JSON.parse(texto);
 
         if(!datos.ok){
 

@@ -49,7 +49,8 @@ foreach ($datos as $fila) {
         $fila["producto"], 
         $fila["lote"], 
         $fila["fecha"],
-        $codigoAgricultor
+        $codigoAgricultor,
+        $fila["codigoPartida"],
     );
 
     //------------------------------------------

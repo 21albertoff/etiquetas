@@ -45,7 +45,9 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
     v.sVTA_Idenvase,
     SUM(v.sVTA_BultosVta) AS TotalBultosVta,
     g.GEN_NombreGenero,
-    ae.AEN_idAgriPrincipal AS codigoAgricultor
+    ae.AEN_idAgriPrincipal AS codigoAgricultor,
+    ae.AEN_campa,
+    ael.AEL_muestreo
 
 FROM sb_ventas v
 
@@ -69,7 +71,9 @@ GROUP BY
     v.sVTA_NVenta,
     v.sVTA_Idenvase,
     g.GEN_NombreGenero,
-    ae.AEN_idAgriPrincipal
+    ae.AEN_idAgriPrincipal,
+    ae.AEN_campa,
+    ael.AEL_muestreo
 
 ORDER BY
     v.sVTA_Idenvase,
@@ -118,6 +122,12 @@ ORDER BY
                 $fila['sVTA_IdSubasta'],
                 $fila['sVTA_IdCliente'],
                 $fila['sVTA_NVenta']
+            ),
+
+            'codigoPartida' => sprintf(
+                'P.%s.%s',
+                $fila['AEN_campa'],
+                $fila['AEL_muestreo']
             ),
 
             'fecha' => convertirFechaSubasta(
