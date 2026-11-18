@@ -106,12 +106,16 @@ const datos = JSON.parse(texto);
         }
 
         const fila = datos.datos[0];
+        const totalCopias = datos.datos.reduce(
+            (total, etiqueta) => total + Number(etiqueta.copias || 0),
+            0
+        );
 
         document.getElementById("cliente").textContent = fila.cliente ?? "";
         document.getElementById("producto").textContent = fila.producto ?? "";
         document.getElementById("lote").textContent = fila.lote ?? "";
         document.getElementById("fecha").textContent = fila.fecha ?? "";
-        document.getElementById("copias").textContent = fila.copias ?? "";
+        document.getElementById("copias").textContent = totalCopias;
 
         cambiarEstado("🟢 Datos encontrados","ok");
 

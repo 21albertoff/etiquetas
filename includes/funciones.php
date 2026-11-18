@@ -39,22 +39,6 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
 
     $stmt = $conn->prepare(
         "SELECT
-<<<<<<< HEAD
-            v.sVTA_IdSubasta,
-            v.sVTA_IdCliente,
-            v.sVTA_NVenta,
-            v.sVTA_Idenvase,
-            v.sVTA_BultosVta,
-            g.GEN_NombreGenero
-        FROM sb_ventas v
-        INNER JOIN generos g
-            ON g.GEN_IdGenero=v.sVTA_IdGenero
-        WHERE
-            v.sVTA_IdSubasta=?
-            AND v.sVTA_IdCliente=?
-            AND v.sVTA_NVenta=?"
-    );
-=======
     v.sVTA_IdSubasta,
     v.sVTA_IdCliente,
     v.sVTA_NVenta,
@@ -98,7 +82,6 @@ ORDER BY
     ");
 
     
->>>>>>> 614fd4b2820060f6489f192dafefbc61c6c47045
 
     $stmt->execute([
         $partes[1],
@@ -107,31 +90,14 @@ ORDER BY
     ]);
 
     $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-<<<<<<< HEAD
-=======
-
->>>>>>> 614fd4b2820060f6489f192dafefbc61c6c47045
     if (!$filas) {
         return false;
     }
 
-<<<<<<< HEAD
-    $fila = $filas[0];
+    if ((int) $filas[0]['sVTA_IdCliente'] !== 91300) {
+        $filas = agruparFilasVentaPorEnvase($filas);
+    }
 
-    return [
-        'codigo' => $fila['sVTA_IdCliente'],
-        'cliente' => $fila['GEN_NombreGenero'],
-        'producto' => $fila['GEN_NombreGenero'],
-        'lote' => sprintf(
-            'L.%s.%s.%s',
-            $fila['sVTA_IdSubasta'],
-            $fila['sVTA_IdCliente'],
-            $fila['sVTA_NVenta']
-        ),
-        'fecha' => convertirFechaSubasta($fila['sVTA_IdSubasta']),
-        'copias' => calcularCopiasVenta($filas, (int) $fila['sVTA_IdCliente']),
-    ];
-=======
     $resultado = [];
 
     foreach ($filas as $fila) {
@@ -181,34 +147,34 @@ ORDER BY
     }
 
     return $resultado;
->>>>>>> 614fd4b2820060f6489f192dafefbc61c6c47045
 }
 
-function calcularCopiasVenta(array $filas, int $cliente): int
+function agruparFilasVentaPorEnvase(array $filas): array
 {
-    if ($cliente === 91300) {
-        return calcularCopias(
-            (int) $filas[0]['sVTA_Idenvase'],
-            (int) $filas[0]['sVTA_BultosVta'],
-            $cliente
-        );
-    }
-
-    $bultosPorEnvase = [];
+    $agrupadas = [];
 
     foreach ($filas as $fila) {
         $envase = (int) $fila['sVTA_Idenvase'];
-        $bultosPorEnvase[$envase] = ($bultosPorEnvase[$envase] ?? 0)
-            + (int) $fila['sVTA_BultosVta'];
+        $genero = (string) $fila['GEN_NombreGenero'];
+
+        if (!isset($agrupadas[$envase][$genero])) {
+            $agrupadas[$envase][$genero] = $fila;
+            continue;
+        }
+
+        $agrupadas[$envase][$genero]['TotalBultosVta'] += (int) $fila['TotalBultosVta'];
     }
 
-    $copias = 0;
-    foreach ($bultosPorEnvase as $envase => $bultos) {
-        $copias += calcularCopias((int) $envase, $bultos, $cliente);
+    $resultado = [];
+    foreach ($agrupadas as $filasPorGenero) {
+        foreach ($filasPorGenero as $fila) {
+            $resultado[] = $fila;
+        }
     }
 
-    return max(1, $copias);
+    return $resultado;
 }
+
 
 function calcularCopias(int $envase, int $bultos, int $cliente): int
 {
