@@ -30,27 +30,50 @@ if (!$datos) {
 }
 
 //------------------------------------------
-// Generar ZPL
+// Generar ZPL de todas las etiquetas
 //------------------------------------------
 
-$zpl = generarZPL(
-    $datos["codigo"],
-    $datos["cliente"],
-    $datos["lote"],
-    $datos["fecha"]
-);
+$zplTotal = "";
+$totalCopias = 0;
+$codigoAgricultor = "";
+
+foreach ($datos as $fila) {
+
+    if ((int)$fila["cliente"] === 91300) {
+        $codigoAgricultor = $fila["codigoAgricultor"];
+    }
+    
+    $zpl = generarZPL( 
+        $fila["codigo"], 
+        $fila["cliente"], 
+        $fila["producto"], 
+        $fila["lote"], 
+        $fila["fecha"],
+        $codigoAgricultor,
+        $fila["codigoPartida"],
+    );
+
+    //------------------------------------------
+    // Número de copias
+    //------------------------------------------
+
+    $zpl = str_replace(
+        "^XA",
+        "^XA^PQ" . intval($fila["copias"]),
+        $zpl
+    );
+
+    $zplTotal .= $zpl;
+
+    $totalCopias += intval($fila["copias"]);
+}
 
 //------------------------------------------
-// Añadir número de copias
+// Enviar todo a la impresora
 //------------------------------------------
 
-$zpl = str_replace(
-    "^XA",
-    "^XA^PQ" . intval($datos["copias"]),
-    $zpl
-);
+$resultado = enviarZPL($zplTotal);
 
-$resultado = enviarZPL($zpl);
 if (!$resultado['ok']) {
     echo json_encode($resultado);
     exit;
@@ -62,5 +85,5 @@ if (!$resultado['ok']) {
 
 echo json_encode([
     "ok" => true,
-    "copias" => $datos["copias"]
+    "copias" => $totalCopias
 ]);

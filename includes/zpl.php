@@ -74,7 +74,7 @@ function escribirTexto(&$zpl, $x, $y, $alto, $ancho, $texto)
 |--------------------------------------------------------------------------
 */
 
-function generarZPL($codigo, $cliente, $lote, $fecha)
+function generarZPL($codigo, $cliente, $producto, $lote, $fecha, $codigoAgricultor = null, $codigoPartida = null)
 {
 
     /*
@@ -110,6 +110,16 @@ function generarZPL($codigo, $cliente, $lote, $fecha)
     $loteX = 4;
     $loteY = 6;
     $loteTam = 6;
+
+    // Código agricultor
+    $agricultorX = 10;
+    $agricultorY = 6;
+    $agricultorTam = 6;
+
+    // Código partida
+    $partidaX = 16;
+    $partidaY = 6;
+    $partidaTam = 6;
 
     // Fecha
     $fechaX = 4;
@@ -152,8 +162,7 @@ function generarZPL($codigo, $cliente, $lote, $fecha)
     CLIENTE
     =====================================================
     */
-
-    $lineas = dividirTexto($cliente, 32);
+    $lineas = dividirTexto($producto, 32);
 
     escribirTexto(
         $zpl,
@@ -191,6 +200,44 @@ function generarZPL($codigo, $cliente, $lote, $fecha)
         $loteTam,
         "LOTE: " . $lote
     );
+
+    /*
+    =====================================================
+    CÓDIGO AGRICULTOR
+    =====================================================
+    */
+
+    if ((int)$cliente === 91300 && $codigoAgricultor !== null) {
+
+        escribirTexto(
+            $zpl,
+            $agricultorX,
+            $agricultorY,
+            $agricultorTam,
+            $agricultorTam,
+            "C.A.: " . $codigoAgricultor
+        );
+
+    }
+
+    /* 
+    ===================================================== 
+    CÓDIGO PARTIDA
+    ===================================================== 
+    */
+
+    if ((int)$cliente === 91300 && $codigoPartida !== null) {
+
+        escribirTexto(
+            $zpl,
+            $partidaX,
+            $partidaY,
+            $partidaTam,
+            $partidaTam,
+            $codigoPartida
+        );
+
+    }
 
     /*
     =====================================================
