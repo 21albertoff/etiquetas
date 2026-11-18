@@ -79,9 +79,10 @@ GROUP BY
 ORDER BY
     v.sVTA_Idenvase,
     g.GEN_NombreGenero;
+
     ");
 
-    
+    //Comentarios
 
     $stmt->execute([
         $partes[1],
