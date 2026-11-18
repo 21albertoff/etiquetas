@@ -50,8 +50,7 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
         WHERE
             v.sVTA_IdSubasta=?
             AND v.sVTA_IdCliente=?
-            AND v.sVTA_NVenta=?
-        LIMIT 1"
+            AND v.sVTA_NVenta=?"
     );
 
     $stmt->execute([
@@ -60,10 +59,12 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
         $partes[3]
     ]);
 
-    $fila = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$fila) {
+    $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!$filas) {
         return false;
     }
+
+    $fila = $filas[0];
 
     return [
         'codigo' => $fila['sVTA_IdCliente'],
@@ -76,12 +77,34 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
             $fila['sVTA_NVenta']
         ),
         'fecha' => convertirFechaSubasta($fila['sVTA_IdSubasta']),
-        'copias' => calcularCopias(
-            $fila['sVTA_Idenvase'], 
-            $fila['sVTA_BultosVta'], 
-            $fila['sVTA_IdCliente']
-        ),
+        'copias' => calcularCopiasVenta($filas, (int) $fila['sVTA_IdCliente']),
     ];
+}
+
+function calcularCopiasVenta(array $filas, int $cliente): int
+{
+    if ($cliente === 91300) {
+        return calcularCopias(
+            (int) $filas[0]['sVTA_Idenvase'],
+            (int) $filas[0]['sVTA_BultosVta'],
+            $cliente
+        );
+    }
+
+    $bultosPorEnvase = [];
+
+    foreach ($filas as $fila) {
+        $envase = (int) $fila['sVTA_Idenvase'];
+        $bultosPorEnvase[$envase] = ($bultosPorEnvase[$envase] ?? 0)
+            + (int) $fila['sVTA_BultosVta'];
+    }
+
+    $copias = 0;
+    foreach ($bultosPorEnvase as $envase => $bultos) {
+        $copias += calcularCopias((int) $envase, $bultos, $cliente);
+    }
+
+    return max(1, $copias);
 }
 
 function calcularCopias(int $envase, int $bultos, int $cliente): int
