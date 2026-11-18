@@ -49,6 +49,7 @@ function obtenerDatosEtiqueta(PDO $conn, string $codigo)
     ae.AEN_campa,
     ael.AEL_muestreo
 
+
 FROM sb_ventas v
 
 INNER JOIN generos g
