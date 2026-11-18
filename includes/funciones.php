@@ -94,10 +94,23 @@ ORDER BY
         return false;
     }
 
-    if ((int) $filas[0]['sVTA_IdCliente'] !== 91300) {
-        $filas = agruparFilasVentaPorEnvase($filas);
-    }
+<<<<<<< HEAD
+    $fila = $filas[0];
 
+    return [
+        'codigo' => $fila['sVTA_IdCliente'],
+        'cliente' => $fila['GEN_NombreGenero'],
+        'producto' => $fila['GEN_NombreGenero'],
+        'lote' => sprintf(
+            'L.%s.%s.%s',
+            $fila['sVTA_IdSubasta'],
+            $fila['sVTA_IdCliente'],
+            $fila['sVTA_NVenta']
+        ),
+        'fecha' => convertirFechaSubasta($fila['sVTA_IdSubasta']),
+        'copias' => calcularCopiasVenta($filas, (int) $fila['sVTA_IdCliente']),
+    ];
+=======
     $resultado = [];
 
     foreach ($filas as $fila) {
